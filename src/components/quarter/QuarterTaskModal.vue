@@ -1,6 +1,7 @@
 <template>
   <BaseModal
-    v-model="isOpen"
+    :model-value="isOpen"
+    @update:model-value="$emit('update:isOpen', $event)"
     :is-nested="isNested"
     max-width="max-w-5xl"
     @after-leave="$emit('close')"
