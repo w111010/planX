@@ -1,25 +1,10 @@
 <template>
   <div class="space-y-12">
+    <!-- 基本信息 (Basic Information) Section -->
+    <BasicInfoSection />
+
     <!-- 干什么 (Goals) Section -->
-    <section>
-      <h2 class="text-3xl font-bold text-gray-900 mb-6">干什么</h2>
-      <div class="space-y-6">
-        <div class="flex justify-end">
-          <Button @click="showGoalModal = true">
-            添加目标
-          </Button>
-        </div>
-        <div class="grid grid-cols-1 gap-6">
-          <AnnualTaskCard
-            v-for="task in tasks"
-            :key="task.id"
-            v-bind="task"
-            @edit="editTask"
-            @delete="deleteTask"
-          />
-        </div>
-      </div>
-    </section>
+    <GoalTableSection />
 
     <!-- 为什么干 (Value) Section -->
     <section>
@@ -40,6 +25,12 @@
     <!-- 如何干 (Implementation) Section -->
     <HowSection :plan-level="'year'" class="mt-12" />
 
+    <!-- 所需资源 (Resources) Section -->
+    <ResourceSection />
+
+    <!-- 风险预案 (Risk Management) Section -->
+    <RiskSection />
+
     <!-- Modals -->
     <AnnualTaskModal
       v-if="showTaskModal"
@@ -53,9 +44,12 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 import Button from '../ui/Button.vue'
-import AnnualTaskCard from './AnnualTaskCard.vue'
 import AnnualTaskModal from './AnnualTaskModal.vue'
 import HowSection from '../how/HowSection.vue'
+import BasicInfoSection from './BasicInfoSection.vue'
+import GoalTableSection from './GoalTableSection.vue'
+import ResourceSection from './ResourceSection.vue'
+import RiskSection from './RiskSection.vue'
 import type { Task } from '../../types/task'
 
 // View mode state
