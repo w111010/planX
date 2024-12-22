@@ -13,7 +13,7 @@
         <div class="flex items-center gap-2 text-sm text-gray-500">
           <span>负责人：{{ owner }}</span>
           <span v-if="planLevel === 'year'">{{ formatQuarter(startDate) }} - {{ formatQuarter(endDate) }}</span>
-          <span v-else>{{ formatMonth(startMonth) }} - {{ formatMonth(endMonth) }}</span>
+          <span v-else-if="planLevel === 'quarter'">{{ formatMonth(startMonth) }} - {{ formatMonth(endMonth) }}</span>
         </div>
         <div class="flex flex-wrap items-center gap-2">
           <span 
