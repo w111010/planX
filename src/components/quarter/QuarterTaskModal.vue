@@ -178,8 +178,6 @@ const availableMonths = computed(() => {
     value: month,
     label: month
   }))
-    default: return []
-  }
 })
 
 // 月份顺序验证
