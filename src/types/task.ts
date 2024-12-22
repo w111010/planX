@@ -24,8 +24,10 @@ export interface Task {
   id: number
   title: string
   owner: string
-  startDate: string
-  endDate: string
+  startDate: string  // Deprecated: Use startMonth instead
+  endDate: string    // Deprecated: Use endMonth instead
+  startMonth?: number // 1-12, representing the month number
+  endMonth?: number   // 1-12, representing the month number
   description?: string
   dimension: string
   focusPoint: string

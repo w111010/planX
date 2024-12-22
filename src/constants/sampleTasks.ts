@@ -6,8 +6,10 @@ export const SAMPLE_TASKS: Task[] = [
     id: 1,
     title: '开发新一代产品原型',
     owner: '张工',
-    startDate: '2024-03-31', // Q1
-    endDate: '2024-06-30',   // Q2
+    startDate: '',  // Deprecated
+    endDate: '',    // Deprecated
+    startMonth: 1,  // Q1
+    endMonth: 3,    // Q1
     description: '基于市场调研结果，开发下一代产品原型，提升核心竞争力',
     dimension: DIMENSIONS.PRODUCT,
     focusPoint: 'p2',
@@ -42,8 +44,10 @@ export const SAMPLE_TASKS: Task[] = [
     id: 2,
     title: '大客户开发计划',
     owner: '李总',
-    startDate: '2024-03-31', // Q1
-    endDate: '2024-12-31',   // Q4
+    startDate: '',  // Deprecated
+    endDate: '',    // Deprecated
+    startMonth: 1,  // Q1
+    endMonth: 3,    // Q1 (adjusted to stay within quarter)
     description: '针对重点行业，开发和维护核心大客户',
     dimension: DIMENSIONS.CUSTOMER,
     focusPoint: 'c1',

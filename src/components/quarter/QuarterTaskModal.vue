@@ -319,8 +319,8 @@ const emit = defineEmits<{
 const formData = ref({
   title: props.task?.title || '',
   owner: props.task?.owner || '',
-  startMonth: props.task?.startDate || '',
-  endMonth: props.task?.endDate || '',
+  startMonth: props.task?.startMonth || null,
+  endMonth: props.task?.endMonth || null,
   description: props.task?.description || '',
   dimension: props.task?.dimension || '',
   focusPoint: props.task?.focusPoint || '',
@@ -330,21 +330,17 @@ const formData = ref({
 
 // 可选月份
 const availableMonths = computed(() => {
-  const months = Object.keys(MONTH_MAPPING[props.currentQuarter as keyof typeof MONTH_MAPPING] || {})
-  return months.map(month => ({
-    value: month,
-    label: month
+  const quarterMonths = MONTH_MAPPING[props.currentQuarter as keyof typeof MONTH_MAPPING] || {}
+  return Object.entries(quarterMonths).map(([label, value]) => ({
+    value,
+    label
   }))
 })
 
 // 月份顺序验证
 const isMonthOrderValid = computed(() => {
   if (!formData.value.startMonth || !formData.value.endMonth) return true
-  const quarterMonths = MONTH_MAPPING[props.currentQuarter as keyof typeof MONTH_MAPPING]
-  if (!quarterMonths) return true
-  const startMonth = quarterMonths[formData.value.startMonth]
-  const endMonth = quarterMonths[formData.value.endMonth]
-  return startMonth <= endMonth
+  return formData.value.startMonth <= formData.value.endMonth
 })
 
 // 表单验证
@@ -445,15 +441,14 @@ function removeAttachment(kr: KeyResult, index: number) {
 
 // 提交表单
 function handleSubmit() {
-  const quarterMonths = MONTH_MAPPING[props.currentQuarter as keyof typeof MONTH_MAPPING]
-  if (!quarterMonths) return
-
   const task: Task = {
     id: props.task?.id || Date.now(),
     title: formData.value.title,
     owner: formData.value.owner,
-    startDate: String(quarterMonths[formData.value.startMonth]),
-    endDate: String(quarterMonths[formData.value.endMonth]),
+    startDate: '', // Deprecated: Keep for backward compatibility
+    endDate: '',   // Deprecated: Keep for backward compatibility
+    startMonth: formData.value.startMonth,
+    endMonth: formData.value.endMonth,
     description: formData.value.description,
     dimension: formData.value.dimension,
     focusPoint: formData.value.focusPoint,

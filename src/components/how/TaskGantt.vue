@@ -8,11 +8,11 @@
         </div>
         <div class="flex-1 flex px-2">
           <div
-            v-for="quarter in ['Q1', 'Q2', 'Q3', 'Q4']"
-            :key="quarter"
+            v-for="month in [1, 2, 3]"
+            :key="month"
             class="flex-1 py-4 text-center text-sm font-medium text-gray-700 border-l"
           >
-            {{ quarter }}
+            {{ month }}月
           </div>
         </div>
       </div>
@@ -105,7 +105,7 @@
               <div>
                 <div class="text-sm font-medium text-gray-500">时间区间</div>
                 <div class="mt-1 text-sm text-gray-900">
-                  {{ formatQuarter(selectedTask.startDate) }} - {{ formatQuarter(selectedTask.endDate) }}
+                  {{ formatMonth(selectedTask.startMonth) }} - {{ formatMonth(selectedTask.endMonth) }}
                 </div>
               </div>
               <div>
@@ -262,65 +262,56 @@ const getBusinessFlowName = (dimension: string, flowId: string) => {
  */
 const ganttContainer = ref<HTMLElement | null>(null)
 
-// 每个季度的宽度
-const quarterWidth = ref(0)
+// 每个月的宽度
+const monthWidth = ref(0)
 
-// 在挂载和窗口尺寸变化时，实时计算季度宽度
+// 在挂载和窗口尺寸变化时，实时计算月份宽度
 onMounted(() => {
-  updateQuarterWidth()
-  window.addEventListener('resize', updateQuarterWidth)
+  updateMonthWidth()
+  window.addEventListener('resize', updateMonthWidth)
 })
 
 onBeforeUnmount(() => {
-  window.removeEventListener('resize', updateQuarterWidth)
+  window.removeEventListener('resize', updateMonthWidth)
 })
 
-const updateQuarterWidth = () => {
+const updateMonthWidth = () => {
   if (!ganttContainer.value) return
   // 减去左侧固定任务栏宽度
   const containerWidth = ganttContainer.value.clientWidth - 256 
-  // 按 4 个季度分
-  quarterWidth.value = containerWidth / 4
+  // 按 3 个月分
+  monthWidth.value = containerWidth / 3
 }
 
-// 获取季度索引
-function getQuarterIndex(date: string) {
-  const month = parseInt(date.split('-')[1], 10)
-  if (month <= 3) return 0
-  else if (month <= 6) return 1
-  else if (month <= 9) return 2
-  else return 3
+// 获取相对月份位置 (0-2)
+function getMonthPosition(month: number | null) {
+  if (!month) return 0
+  // 将月份转换为0-2的相对位置
+  return Math.max(0, Math.min(2, month - 1))
 }
 
-// 根据季度索引得到日期字符串（假设固定为 2024）
-function getQuarterDate(quarter: number) {
-  const year = 2024
-  const quarterMap = ['03-31', '06-30', '09-30', '12-31']
-  return `${year}-${quarterMap[quarter]}`
+// 根据位置获取月份 (1-3)
+function getMonthFromPosition(position: number) {
+  // 将0-2的位置转换为1-3的月份
+  return Math.max(1, Math.min(3, position + 1))
 }
 
-// 格式化季度显示
-function formatQuarter(date: string) {
-  const quarterMap: Record<string, string> = {
-    '03-31': 'Q1',
-    '06-30': 'Q2',
-    '09-30': 'Q3',
-    '12-31': 'Q4'
-  }
-  const datePart = date.split('-').slice(1).join('-')
-  return quarterMap[datePart] || 'QX'
+// 格式化月份显示
+function formatMonth(month: number | null) {
+  if (!month) return '1月'
+  return `${month}月`
 }
 
 /** 
  * =============== 计算任务条样式 =============== 
  */
 function getTaskBarStyle(task: Task) {
-  // 根据 startDate / endDate 计算 left / width
-  const startQ = getQuarterIndex(task.startDate)
-  const endQ = getQuarterIndex(task.endDate)
-  const left = startQ * quarterWidth.value
-  // +1 因为如果 startQ=0, endQ=0, 也要占一个季度宽度
-  const width = (endQ - startQ + 1) * quarterWidth.value
+  // 根据 startMonth / endMonth 计算 left / width
+  const startPos = getMonthPosition(task.startMonth)
+  const endPos = getMonthPosition(task.endMonth)
+  const left = startPos * monthWidth.value
+  // +1 因为如果 startPos=0, endPos=0, 也要占一个月宽度
+  const width = (endPos - startPos + 1) * monthWidth.value
 
   return {
     position: 'absolute',
@@ -472,25 +463,27 @@ function stopDrag() {
     return
   }
 
-  // 松手后，根据最终 left / width 计算新的季度起止
+  // 松手后，根据最终 left / width 计算新的月份起止
   const finalLeft = parseFloat(draggedStyle.value.left)
   const finalWidth = parseFloat(draggedStyle.value.width)
 
-  // "网格吸附"到最近的季度：四舍五入
-  const newStartQuarter = Math.round(finalLeft / quarterWidth.value)
-  const newEndQuarter   = Math.round((finalLeft + finalWidth) / quarterWidth.value) - 1
+  // "网格吸附"到最近的月份：四舍五入
+  const newStartPos = Math.round(finalLeft / monthWidth.value)
+  const newEndPos   = Math.round((finalLeft + finalWidth) / monthWidth.value) - 1
 
   // clamp 避免越界
-  const clampedStartQ = Math.max(0, Math.min(3, newStartQuarter))
-  const clampedEndQ   = Math.max(clampedStartQ, Math.min(3, newEndQuarter))
+  const clampedStartPos = Math.max(0, Math.min(2, newStartPos))
+  const clampedEndPos   = Math.max(clampedStartPos, Math.min(2, newEndPos))
 
-  const newStartDate = getQuarterDate(clampedStartQ)
-  const newEndDate   = getQuarterDate(clampedEndQ)
+  const newStartMonth = getMonthFromPosition(clampedStartPos)
+  const newEndMonth   = getMonthFromPosition(clampedEndPos)
 
   // 发出更新事件，外部可更新任务数据
   emit('task-update', dragState.taskId, {
-    startDate: newStartDate,
-    endDate: newEndDate
+    startDate: '',  // Deprecated
+    endDate: '',    // Deprecated
+    startMonth: newStartMonth,
+    endMonth: newEndMonth
   })
 
   // 在这里你也可以加一个"物理弹性/缓动效果"，但通常是CSS过渡即可
