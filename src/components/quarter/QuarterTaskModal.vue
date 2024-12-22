@@ -299,6 +299,7 @@ import Select from '../ui/Select.vue'
 import { TrashIcon, XMarkIcon } from '@heroicons/vue/20/solid'
 import { DIMENSION_LIST, FOCUS_POINTS } from '../../constants/dimensions'
 import { BUSINESS_FLOWS } from '../../constants/businessFlows'
+import { MONTH_MAPPING } from '../../constants/months'
 import type { Task, KeyResult, Metric, Attachment } from '../../types/task'
 
 const props = defineProps<{
@@ -329,13 +330,7 @@ const formData = ref({
 
 // 可选月份
 const availableMonths = computed(() => {
-  const months = {
-    'Q1': ['1月', '2月', '3月'],
-    'Q2': ['4月', '5月', '6月'],
-    'Q3': ['7月', '8月', '9月'],
-    'Q4': ['10月', '11月', '12月']
-  }[props.currentQuarter] || []
-  
+  const months = Object.keys(MONTH_MAPPING[props.currentQuarter as keyof typeof MONTH_MAPPING] || {})
   return months.map(month => ({
     value: month,
     label: month
@@ -345,10 +340,11 @@ const availableMonths = computed(() => {
 // 月份顺序验证
 const isMonthOrderValid = computed(() => {
   if (!formData.value.startMonth || !formData.value.endMonth) return true
-  const months = availableMonths.value.map(m => m.value)
-  const startIdx = months.indexOf(formData.value.startMonth)
-  const endIdx = months.indexOf(formData.value.endMonth)
-  return startIdx <= endIdx
+  const quarterMonths = MONTH_MAPPING[props.currentQuarter as keyof typeof MONTH_MAPPING]
+  if (!quarterMonths) return true
+  const startMonth = quarterMonths[formData.value.startMonth]
+  const endMonth = quarterMonths[formData.value.endMonth]
+  return startMonth <= endMonth
 })
 
 // 表单验证
@@ -449,10 +445,23 @@ function removeAttachment(kr: KeyResult, index: number) {
 
 // 提交表单
 function handleSubmit() {
-  emit('submit', {
+  const quarterMonths = MONTH_MAPPING[props.currentQuarter as keyof typeof MONTH_MAPPING]
+  if (!quarterMonths) return
+
+  const task: Task = {
     id: props.task?.id || Date.now(),
-    ...formData.value
-  } as Task)
+    title: formData.value.title,
+    owner: formData.value.owner,
+    startDate: String(quarterMonths[formData.value.startMonth]),
+    endDate: String(quarterMonths[formData.value.endMonth]),
+    description: formData.value.description,
+    dimension: formData.value.dimension,
+    focusPoint: formData.value.focusPoint,
+    businessFlow: formData.value.businessFlow,
+    keyResults: formData.value.keyResults
+  }
+  
+  emit('submit', task)
   emit('close')
 }
 </script>
