@@ -1,19 +1,13 @@
 import { DIMENSIONS } from './dimensions'
 import type { Task } from '../types/task'
 
-// @deprecated Use annualTasks.ts, quarterlyTasks.ts, or monthlyTasks.ts instead
-// These sample tasks will be removed in a future update
-export const SAMPLE_TASKS: Task[] = [
+export const ANNUAL_TASKS: Task[] = [
   {
     id: 1,
     title: '开发新一代产品原型',
     owner: '张工',
-    startDate: '',      // @deprecated
-    endDate: '',        // @deprecated
     startQuarter: 'Q1',
     endQuarter: 'Q2',
-    startMonth: 1,
-    endMonth: 3,
     description: '基于市场调研结果，开发下一代产品原型，提升核心竞争力',
     dimension: DIMENSIONS.PRODUCT,
     focusPoint: 'p2',
@@ -30,17 +24,6 @@ export const SAMPLE_TASKS: Task[] = [
           { type: 'file', name: '产品原型设计文档', url: '/docs/prototype.pdf' },
           { type: 'link', name: '原型演示地址', url: 'https://demo.example.com' }
         ]
-      },
-      {
-        name: '建立产品研发流程',
-        type: '流程',
-        metrics: [
-          { name: '研发周期缩短', target: 30, unit: '%' },
-          { name: '一次性通过率', target: 95, unit: '%' }
-        ],
-        attachments: [
-          { type: 'file', name: '研发流程文档', url: '/docs/process.pdf' }
-        ]
       }
     ]
   },
@@ -48,12 +31,8 @@ export const SAMPLE_TASKS: Task[] = [
     id: 2,
     title: '大客户开发计划',
     owner: '李总',
-    startDate: '',      // @deprecated
-    endDate: '',        // @deprecated
     startQuarter: 'Q2',
     endQuarter: 'Q4',
-    startMonth: 4,
-    endMonth: 6,
     description: '针对重点行业，开发和维护核心大客户',
     dimension: DIMENSIONS.CUSTOMER,
     focusPoint: 'c1',
@@ -68,18 +47,6 @@ export const SAMPLE_TASKS: Task[] = [
         ],
         attachments: [
           { type: 'file', name: '服务体系方案', url: '/docs/service.pdf' }
-        ]
-      },
-      {
-        name: '销售团队能力提升',
-        type: '技能',
-        metrics: [
-          { name: '人均产值', target: 500, unit: '万元' },
-          { name: '成交转化率', target: 35, unit: '%' }
-        ],
-        attachments: [
-          { type: 'file', name: '培训计划', url: '/docs/training.pdf' },
-          { type: 'link', name: '在线课程', url: 'https://course.example.com' }
         ]
       }
     ]
