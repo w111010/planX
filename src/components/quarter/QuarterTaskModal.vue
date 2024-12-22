@@ -56,12 +56,17 @@
             <label class="block text-sm font-medium text-gray-700 mb-1">
               完成月份
             </label>
-            <Select
-              v-model="formData.endMonth"
-              :options="availableMonths"
-              placeholder="选择完成月份"
-              position="bottom"
-            />
+            <div>
+              <Select
+                v-model="formData.endMonth"
+                :options="availableMonths"
+                placeholder="选择完成月份"
+                position="bottom"
+              />
+              <div v-if="!isMonthOrderValid" class="mt-1 text-sm text-red-600">
+                结束月份不能早于开始月份
+              </div>
+            </div>
           </div>
         </div>
 
@@ -162,29 +167,28 @@ const formData = ref({
 
 // 可选月份
 const availableMonths = computed(() => {
-  switch (props.currentQuarter) {
-    case 'Q1': return [
-      { value: '1月', label: '1月' },
-      { value: '2月', label: '2月' },
-      { value: '3月', label: '3月' }
-    ]
-    case 'Q2': return [
-      { value: '4月', label: '4月' },
-      { value: '5月', label: '5月' },
-      { value: '6月', label: '6月' }
-    ]
-    case 'Q3': return [
-      { value: '7月', label: '7月' },
-      { value: '8月', label: '8月' },
-      { value: '9月', label: '9月' }
-    ]
-    case 'Q4': return [
-      { value: '10月', label: '10月' },
-      { value: '11月', label: '11月' },
-      { value: '12月', label: '12月' }
-    ]
+  const months = {
+    'Q1': ['1月', '2月', '3月'],
+    'Q2': ['4月', '5月', '6月'],
+    'Q3': ['7月', '8月', '9月'],
+    'Q4': ['10月', '11月', '12月']
+  }[props.currentQuarter] || []
+  
+  return months.map(month => ({
+    value: month,
+    label: month
+  }))
     default: return []
   }
+})
+
+// 月份顺序验证
+const isMonthOrderValid = computed(() => {
+  if (!formData.value.startMonth || !formData.value.endMonth) return true
+  const months = availableMonths.value.map(m => m.value)
+  const startIdx = months.indexOf(formData.value.startMonth)
+  const endIdx = months.indexOf(formData.value.endMonth)
+  return startIdx <= endIdx
 })
 
 // 表单验证
@@ -193,7 +197,8 @@ const isValid = computed(() => {
     formData.value.owner &&
     formData.value.startMonth &&
     formData.value.endMonth &&
-    formData.value.dimension
+    formData.value.dimension &&
+    isMonthOrderValid.value
 })
 
 // 选择维度
