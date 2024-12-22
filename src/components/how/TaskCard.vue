@@ -12,7 +12,7 @@
         <h3 class="text-lg font-semibold text-gray-900">{{ title }}</h3>
         <div class="flex items-center gap-2 text-sm text-gray-500">
           <span>负责人：{{ owner }}</span>
-          <span>{{ formatQuarter(startDate) }} - {{ formatQuarter(endDate) }}</span>
+          <span>{{ formatMonth(startMonth) }} - {{ formatMonth(endMonth) }}</span>
         </div>
         <div class="flex flex-wrap items-center gap-2">
           <span 
@@ -48,8 +48,10 @@
             id,
             title,
             owner,
-            startDate,
-            endDate,
+            startDate: '',  // Deprecated
+            endDate: '',    // Deprecated
+            startMonth,
+            endMonth,
             description,
             dimension,
             focusPoint,
@@ -154,6 +156,7 @@ import {
   LinkIcon
 } from '@heroicons/vue/20/solid'
 import type { Task, KeyResult } from '../../types/task'
+import { formatMonth } from '../../utils/date'
 import { FOCUS_POINTS } from '../../constants/dimensions'
 import { BUSINESS_FLOWS } from '../../constants/businessFlows'
 import FileUploadButton from '../ui/FileUploadButton.vue'
@@ -170,16 +173,7 @@ const emit = defineEmits<{
 
 const showDetails = ref(false)
 
-function formatQuarter(date: string) {
-  const quarterMap: Record<string, string> = {
-    '03-31': 'Q1',
-    '06-30': 'Q2',
-    '09-30': 'Q3',
-    '12-31': 'Q4'
-  }
-  const datePart = date.split('-').slice(1).join('-')
-  return quarterMap[datePart] || 'QX'
-}
+// Removed formatQuarter function as we now use month-based display directly
 
 function getFocusPointName(dimension: string, focusPointId: string) {
   const points = FOCUS_POINTS[dimension as keyof typeof FOCUS_POINTS]

@@ -296,11 +296,7 @@ function getMonthFromPosition(position: number) {
   return Math.max(1, Math.min(3, position + 1))
 }
 
-// 格式化月份显示
-function formatMonth(month: number | null) {
-  if (!month) return '1月'
-  return `${month}月`
-}
+import { formatMonth } from '../../utils/date'
 
 /** 
  * =============== 计算任务条样式 =============== 
