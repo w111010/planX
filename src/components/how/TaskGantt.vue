@@ -8,11 +8,11 @@
         </div>
         <div class="flex-1 flex px-2">
           <div
-            v-for="month in [1, 2, 3]"
+            v-for="month in quarterMonths"
             :key="month"
             class="flex-1 py-4 text-center text-sm font-medium text-gray-700 border-l"
           >
-            {{ month }}月
+            {{ formatMonth(month) }}
           </div>
         </div>
       </div>
@@ -217,7 +217,14 @@ import type { KeyResult } from '../../types/task'
  */
 const props = defineProps<{
   tasks: Task[]
+  currentQuarter: string
 }>()
+
+// Get months for current quarter
+const quarterMonths = computed(() => {
+  const quarterNum = parseInt(props.currentQuarter.replace('Q', ''))
+  return getQuarterMonths(quarterNum)
+})
 
 const emit = defineEmits<{
   'task-update': (taskId: number, updates: Partial<Task>) => void
@@ -279,21 +286,21 @@ const updateMonthWidth = () => {
   if (!ganttContainer.value) return
   // 减去左侧固定任务栏宽度
   const containerWidth = ganttContainer.value.clientWidth - 256 
-  // 按 3 个月分
-  monthWidth.value = containerWidth / 3
+  // 按季度月份数分
+  monthWidth.value = containerWidth / quarterMonths.value.length
 }
 
-// 获取相对月份位置 (0-2)
+// 获取相对月份位置
 function getMonthPosition(month: number | null) {
   if (!month) return 0
-  // 将月份转换为0-2的相对位置
-  return Math.max(0, Math.min(2, month - 1))
+  const index = quarterMonths.value.indexOf(month)
+  return index >= 0 ? index : 0
 }
 
-// 根据位置获取月份 (1-3)
+// 根据位置获取月份
 function getMonthFromPosition(position: number) {
-  // 将0-2的位置转换为1-3的月份
-  return Math.max(1, Math.min(3, position + 1))
+  const index = Math.max(0, Math.min(quarterMonths.value.length - 1, position))
+  return quarterMonths.value[index]
 }
 
 import { formatMonth } from '../../utils/date'

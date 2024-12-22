@@ -110,6 +110,7 @@
           <TaskCard
             v-bind="task"
             :is-compact="currentListView === 'compact'"
+            :plan-level="planLevel"
             @edit="handleTaskEdit"
             @delete="handleTaskDelete"
             @update:attachments="handleFileUpload"
@@ -128,6 +129,7 @@
       <TaskGantt
         v-else
         :tasks="filteredTasks"
+        :current-quarter="currentQuarter"
         @task-update="handleTaskUpdate"
       />
     </div>
@@ -137,6 +139,7 @@
       v-if="showNewTaskModal"
       :task="editingTask"
       :current-quarter="currentQuarter"
+      :plan-level="planLevel"
       @close="closeTaskModal"
       @save="handleModalSave"
     />
@@ -146,6 +149,7 @@
       v-if="showEditModal"
       :task="editingTask"
       :current-quarter="currentQuarter"
+      :plan-level="planLevel"
       @close="showEditModal = false"
       @save="handleTaskSave"
     />
@@ -179,6 +183,7 @@ const viewOptions = [
 const currentView = ref('list')
 const currentListView = ref('detailed')
 const currentQuarter = inject('currentQuarter', ref('Q1'))
+const planLevel = inject('planLevel', ref('quarter'))
 
 // 列表视图选项
 const listViewOptions = [

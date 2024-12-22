@@ -9,6 +9,16 @@ export function formatMonth(month: number | null | undefined): string {
 }
 
 /**
+ * 格式化季度显示
+ * @param quarter 季度数字 (1-4)
+ * @returns 格式化后的季度字符串 (例如: "第1季度")
+ */
+export function formatQuarter(quarter: number | null | undefined): string {
+  if (!quarter || quarter < 1 || quarter > 4) return '未指定'
+  return `第${quarter}季度`
+}
+
+/**
  * 获取季度对应的月份范围
  * @param quarter 季度 (1-4)
  * @returns 季度包含的月份数组

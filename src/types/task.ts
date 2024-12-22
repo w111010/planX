@@ -24,8 +24,10 @@ export interface Task {
   id: number
   title: string
   owner: string
-  startDate: string  // Deprecated: Use startMonth instead
-  endDate: string    // Deprecated: Use endMonth instead
+  // For annual plans (quarter-based)
+  startDate: string  // Q1-Q4, representing the quarter (e.g., "Q1")
+  endDate: string    // Q1-Q4, representing the quarter (e.g., "Q4")
+  // For quarterly plans (month-based)
   startMonth?: number // 1-12, representing the month number
   endMonth?: number   // 1-12, representing the month number
   description?: string

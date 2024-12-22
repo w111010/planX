@@ -58,33 +58,23 @@
     <div v-if="selectedLevel" class="px-1">
       <!-- 年度计划 -->
       <template v-if="selectedLevel.id === 'year'">
-        <GoalSection :plan-level="'year'" />
-        <ValueSection ref="valueSection" :plan-level="'year'" />
-        <HowSection :plan-level="'year'" />
+        <AnnualPlan />
       </template>
 
       <!-- 季度计划 -->
       <template v-else-if="selectedLevel.id === 'quarter'">
-        <QuarterPlan :plan-level="'quarter'" />
+        <QuarterPlan />
       </template>
 
       <!-- 月度计划 -->
       <template v-else-if="selectedLevel.id === 'month'">
-        <MonthPlan :plan-level="'month'" />
+        <MonthPlan />
       </template>
 
-      <!-- 其他模块 -->
-      <section v-else
-        v-for="module in otherModules"
-        :key="module.id">
-        <h2 class="text-3xl font-bold text-gray-900 mb-6">{{ module.title }}</h2>
-        <textarea
-          v-model="moduleData[module.id]"
-          rows="4"
-          class="block w-full bg-transparent border-b border-gray-200 text-gray-900 placeholder:text-gray-400 focus:border-gray-400 focus:ring-0 transition-colors resize-none"
-          :placeholder="module.description"
-        ></textarea>
-      </section>
+      <!-- 未实现的计划级别 -->
+      <div v-else class="text-center py-12">
+        <p class="text-gray-500">该计划级别尚未实现</p>
+      </div>
     </div>
   </div>
 </template>
@@ -94,9 +84,7 @@ import { ref, computed } from 'vue'
 import { ChevronDownIcon } from '@heroicons/vue/20/solid'
 import Button from './ui/Button.vue'
 import Card from './ui/Card.vue'
-import GoalSection from './goals/GoalSection.vue'
-import HowSection from './how/HowSection.vue'
-import ValueSection from './values/ValueSection.vue'
+import AnnualPlan from './annual/AnnualPlan.vue'
 import QuarterPlan from './quarter/QuarterPlan.vue'
 import MonthPlan from './month/MonthPlan.vue'
 
@@ -129,19 +117,6 @@ const planLevels = ref<PlanLevel[]>([
 ])
 
 const selectedLevel = computed(() => planLevels.value.find(level => level.current))
-
-// 价值模块引用
-const valueSection = ref<InstanceType<typeof ValueSection>>()
-
-// 其他模块定义
-const otherModules = [
-  { id: 'how', title: '如何干', description: '制定步骤...' },
-  { id: 'resources', title: '所需资源', description: '列出资源...' },
-  { id: 'risks', title: '风险预案', description: '风险应对...' },
-]
-
-// 模块数据
-const moduleData = ref<Record<string, string>>({})
 
 // 选择计划层级
 const selectLevel = (level: PlanLevel) => {

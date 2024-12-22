@@ -12,8 +12,14 @@
         <h3 class="text-lg font-semibold text-gray-900">{{ title }}</h3>
         <div class="flex items-center gap-2 text-sm text-gray-500">
           <span>负责人：{{ owner }}</span>
-          <span v-if="planLevel === 'year'">{{ formatQuarter(startDate) }} - {{ formatQuarter(endDate) }}</span>
-          <span v-else-if="planLevel === 'quarter'">{{ formatMonth(startMonth) }} - {{ formatMonth(endMonth) }}</span>
+          <span class="bg-gray-100 px-2 py-1 rounded">
+            <template v-if="planLevel === 'quarter'">
+              {{ formatMonth(startMonth) }} - {{ formatMonth(endMonth) }}
+            </template>
+            <template v-else>
+              {{ formatQuarter(startDate) }} - {{ formatQuarter(endDate) }}
+            </template>
+          </span>
         </div>
         <div class="flex flex-wrap items-center gap-2">
           <span 
@@ -49,10 +55,10 @@
             id,
             title,
             owner,
-            startDate: '',  // Deprecated
-            endDate: '',    // Deprecated
-            startMonth,
-            endMonth,
+            ...(planLevel === 'quarter' 
+              ? { startMonth, endMonth }
+              : { startDate, endDate }
+            ),
             description,
             dimension,
             focusPoint,
@@ -157,21 +163,27 @@ import {
   LinkIcon
 } from '@heroicons/vue/20/solid'
 import type { Task, KeyResult } from '../../types/task'
-import { formatMonth } from '../../utils/date'
+import { formatMonth, formatQuarter } from '../../utils/date'
 import { FOCUS_POINTS } from '../../constants/dimensions'
 import { BUSINESS_FLOWS } from '../../constants/businessFlows'
 import FileUploadButton from '../ui/FileUploadButton.vue'
 
-const props = defineProps<Task & {
-  isCompact?: boolean,
-  planLevel?: 'year' | 'quarter' | 'month'
+const props = defineProps<{
+  id: number
+  title: string
+  owner: string
+  startMonth?: number
+  endMonth?: number
+  startDate?: string
+  endDate?: string
+  description?: string
+  dimension: string
+  focusPoint: string
+  businessFlow: string
+  keyResults: KeyResult[]
+  isCompact?: boolean
+  planLevel?: 'quarter' | 'year'
 }>()
-
-// Format quarter (Q1-Q4)
-function formatQuarter(quarter: string) {
-  if (!quarter) return ''
-  return quarter.replace(/Q(\d)/, '第$1季度')
-}
 
 const emit = defineEmits<{
   edit: [Task]
@@ -181,7 +193,7 @@ const emit = defineEmits<{
 
 const showDetails = ref(false)
 
-// Removed formatQuarter function as we now use month-based display directly
+// Helper functions for getting display names
 
 function getFocusPointName(dimension: string, focusPointId: string) {
   const points = FOCUS_POINTS[dimension as keyof typeof FOCUS_POINTS]

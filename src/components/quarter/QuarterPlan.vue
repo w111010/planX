@@ -20,7 +20,7 @@
     <ValueSection :period="currentQuarter" :plan-level="planLevel" class="mt-12 space-y-6" />
 
     <!-- 如何干（路径与流程） -->
-    <HowSection :period="currentQuarter" :plan-level="planLevel" class="mt-12 space-y-6" />
+    <HowSection :period="currentQuarter" :plan-level="'quarter'" class="mt-12 space-y-6" />
 
   </div>
 </template>
@@ -51,4 +51,4 @@ const currentQuarter = ref('Q1')
 .quarter-plan {
   @apply max-w-7xl mx-auto;
 }
-</style>             
+</style>                
