@@ -14,13 +14,13 @@
     </div>
 
     <!-- 干什么（目标） -->
-    <GoalSection :period="currentQuarter" class="space-y-6" />
+    <GoalSection :period="currentQuarter" :plan-level="planLevel" class="space-y-6" />
 
     <!-- 为什么干（价值） -->
-    <ValueSection :period="currentQuarter" class="mt-12 space-y-6" />
+    <ValueSection :period="currentQuarter" :plan-level="planLevel" class="mt-12 space-y-6" />
 
     <!-- 如何干（路径与流程） -->
-    <HowSection :period="currentQuarter" class="mt-12 space-y-6" />
+    <HowSection :period="currentQuarter" :plan-level="planLevel" class="mt-12 space-y-6" />
 
   </div>
 </template>
@@ -32,6 +32,10 @@ import Button from '../ui/Button.vue'
 import GoalSection from '../goals/GoalSection.vue'
 import ValueSection from '../values/ValueSection.vue'
 import HowSection from '../how/HowSection.vue'
+
+defineProps<{
+  planLevel?: 'year' | 'quarter' | 'month'
+}>()
 
 // 季度选项
 const quarters = [
@@ -47,4 +51,4 @@ const currentQuarter = ref('Q1')
 .quarter-plan {
   @apply max-w-7xl mx-auto;
 }
-</style>          
+</style>             

@@ -10,6 +10,7 @@
             class="group inline-flex items-center gap-x-2 text-gray-900 hover:text-gray-600 transition-colors py-2 px-1"
             @click="toggleYearDropdown"
           >
+            <span>{{ selectedYear }}年</span>
             <ChevronDownIcon
               :class="[
                 showYearDropdown ? 'rotate-180 transform' : '',
@@ -57,19 +58,19 @@
     <div v-if="selectedLevel" class="px-1">
       <!-- 年度计划 -->
       <template v-if="selectedLevel.id === 'year'">
-        <GoalSection />
-        <ValueSection ref="valueSection" />
-        <HowSection />
+        <GoalSection :plan-level="'year'" />
+        <ValueSection ref="valueSection" :plan-level="'year'" />
+        <HowSection :plan-level="'year'" />
       </template>
 
       <!-- 季度计划 -->
       <template v-else-if="selectedLevel.id === 'quarter'">
-        <QuarterPlan />
+        <QuarterPlan :plan-level="'quarter'" />
       </template>
 
       <!-- 月度计划 -->
       <template v-else-if="selectedLevel.id === 'month'">
-        <MonthPlan />
+        <MonthPlan :plan-level="'month'" />
       </template>
 
       <!-- 其他模块 -->
