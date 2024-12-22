@@ -13,10 +13,10 @@
       </Card>
     </div>
 
-    <!-- 月度目标 -->
+    <!-- 干什么（目标） -->
     <section class="space-y-4">
       <div class="flex items-center justify-between">
-        <h3 class="text-2xl font-bold text-gray-900">月度目标</h3>
+        <h3 class="text-2xl font-bold text-gray-900">干什么</h3>
         <Button
           variant="outline"
           size="sm"
@@ -65,10 +65,26 @@
       </div>
     </section>
 
-    <!-- 工作计划 -->
-    <section class="space-y-4">
+    <!-- 为什么干（价值） -->
+    <section class="space-y-4 mt-12">
+      <h3 class="text-2xl font-bold text-gray-900">为什么干</h3>
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div v-for="(value, index) in values" :key="index" class="space-y-4">
+          <h4 class="text-xl font-semibold text-gray-900">{{ value.title }}</h4>
+          <textarea
+            v-model="value.content"
+            rows="4"
+            class="block w-full rounded-md border-0 py-2 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm"
+            :placeholder="value.placeholder"
+          ></textarea>
+        </div>
+      </div>
+    </section>
+
+    <!-- 如何干（路径与流程） -->
+    <section class="space-y-4 mt-12">
       <div class="flex items-center justify-between">
-        <h3 class="text-2xl font-bold text-gray-900">工作计划</h3>
+        <h3 class="text-2xl font-bold text-gray-900">如何干</h3>
         <Button
           variant="outline"
           size="sm"
@@ -89,7 +105,13 @@
                 负责人
               </th>
               <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                截止日期
+                开始周
+              </th>
+              <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                结束周
+              </th>
+              <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                周进度
               </th>
               <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                 状态
@@ -109,7 +131,21 @@
                 {{ task.owner }}
               </td>
               <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                {{ task.dueDate }}
+                第{{ task.startWeek }}周
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                第{{ task.endWeek }}周
+              </td>
+              <td class="px-6 py-4">
+                <div class="space-y-2">
+                  <div v-for="progress in task.weeklyProgress" :key="progress.week" class="flex items-center space-x-2">
+                    <span class="text-xs text-gray-500">第{{ progress.week }}周:</span>
+                    <div class="flex-1 bg-gray-200 rounded-full h-1.5">
+                      <div class="bg-blue-600 h-1.5 rounded-full" :style="{ width: progress.completion + '%' }"></div>
+                    </div>
+                    <span class="text-xs text-gray-500">{{ progress.completion }}%</span>
+                  </div>
+                </div>
               </td>
               <td class="px-6 py-4 whitespace-nowrap">
                 <span class="inline-flex items-center rounded-md bg-green-50 px-2 py-1 text-xs font-medium text-green-700">
@@ -127,7 +163,7 @@
     </section>
 
     <!-- 周报告 -->
-    <section class="space-y-4">
+    <section class="space-y-4 mt-12">
       <h3 class="text-2xl font-bold text-gray-900">周报告</h3>
       <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         <div
@@ -167,6 +203,7 @@ import { ref } from 'vue'
 import { PlusIcon } from '@heroicons/vue/24/outline'
 import Card from '../ui/Card.vue'
 import Button from '../ui/Button.vue'
+import ValueSection from '../values/ValueSection.vue'
 
 // 月份选项
 const months = [
@@ -206,13 +243,37 @@ const monthGoals = [
   }
 ]
 
+// Values data
+const values = ref([
+  {
+    title: '客户价值',
+    content: '',
+    placeholder: '描述对客户的价值...'
+  },
+  {
+    title: '团队价值',
+    content: '',
+    placeholder: '描述对团队的价值...'
+  },
+  {
+    title: '公司价值',
+    content: '',
+    placeholder: '描述对公司的价值...'
+  }
+])
+
 const monthTasks = [
   {
     id: 1,
     title: '客户回访',
     description: '对重点客户进行回访',
     owner: '张三',
-    dueDate: '2024-01-15',
+    startWeek: 1,
+    endWeek: 2,
+    weeklyProgress: [
+      { week: 1, status: '进行中', completion: 50 },
+      { week: 2, status: '未开始', completion: 0 }
+    ],
     status: '进行中'
   },
   {
@@ -220,7 +281,12 @@ const monthTasks = [
     title: '产品测试',
     description: '新功能测试与bug修复',
     owner: '李四',
-    dueDate: '2024-01-20',
+    startWeek: 2,
+    endWeek: 3,
+    weeklyProgress: [
+      { week: 2, status: '未开始', completion: 0 },
+      { week: 3, status: '未开始', completion: 0 }
+    ],
     status: '待开始'
   }
 ]
@@ -248,4 +314,4 @@ const viewWeekReport = (report: any) => {
   // 实现查看周报告详情的逻辑
   console.log('查看周报告', report)
 }
-</script> 
+</script>             
