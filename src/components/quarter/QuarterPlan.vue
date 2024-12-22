@@ -35,10 +35,10 @@ import HowSection from '../how/HowSection.vue'
 
 // 季度选项
 const quarters = [
-  { id: 'Q1', name: '2024年第1季度' },
-  { id: 'Q2', name: '2024年第2季度' },
-  { id: 'Q3', name: '2024年第3季度' },
-  { id: 'Q4', name: '2024年第4季度' }
+  { id: 'Q1', name: '第1季度' },
+  { id: 'Q2', name: '第2季度' },
+  { id: 'Q3', name: '第3季度' },
+  { id: 'Q4', name: '第4季度' }
 ]
 const currentQuarter = ref('Q1')
 </script>
@@ -47,4 +47,4 @@ const currentQuarter = ref('Q1')
 .quarter-plan {
   @apply max-w-7xl mx-auto;
 }
-</style>       
+</style>          
