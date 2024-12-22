@@ -1,5 +1,48 @@
 <template>
   <div class="space-y-8">
+    <!-- 基本信息 -->
+    <section class="space-y-4 bg-white p-4 rounded shadow">
+      <h2 class="text-xl font-bold mb-2">基本信息</h2>
+      <div class="grid grid-cols-2 gap-4">
+        <div>
+          <label class="text-sm text-gray-500">年度计划名称</label>
+          <input
+            v-model="basicInfo.planName"
+            type="text"
+            class="block w-full rounded-md border-gray-300 text-sm"
+            placeholder="输入计划名称"
+          />
+        </div>
+        <div>
+          <label class="text-sm text-gray-500">年度</label>
+          <input
+            v-model="basicInfo.planYear"
+            type="text"
+            class="block w-full rounded-md border-gray-300 text-sm"
+            placeholder="2024"
+          />
+        </div>
+        <div>
+          <label class="text-sm text-gray-500">组号</label>
+          <input
+            v-model="basicInfo.groupNumber"
+            type="text"
+            class="block w-full rounded-md border-gray-300 text-sm"
+            placeholder="输入组号"
+          />
+        </div>
+        <div>
+          <label class="text-sm text-gray-500">得分</label>
+          <input
+            v-model="basicInfo.score"
+            type="text"
+            class="block w-full rounded-md border-gray-300 text-sm"
+            placeholder="输入得分"
+          />
+        </div>
+      </div>
+    </section>
+
     <!-- 季度选择 -->
     <div class="flex justify-center">
       <Card class="p-2">
@@ -14,36 +57,100 @@
     </div>
 
     <!-- 季度目标 -->
-    <section class="space-y-4">
-      <h3 class="text-2xl font-bold text-gray-900">季度目标</h3>
-      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        <div
-          v-for="goal in quarterGoals"
-          :key="goal.id"
-          class="bg-white rounded-lg shadow-sm p-6 space-y-4"
+    <section class="space-y-6">
+      <div class="flex items-center justify-between">
+        <h3 class="text-2xl font-bold text-gray-900">季度目标</h3>
+        <Button
+          variant="outline"
+          size="sm"
+          @click="showGoalExample = true"
         >
-          <div class="flex items-center justify-between">
-            <h4 class="text-lg font-medium text-gray-900">{{ goal.title }}</h4>
-            <span class="inline-flex items-center rounded-md bg-indigo-50 px-2 py-1 text-xs font-medium text-indigo-700">
-              {{ goal.dimension }}
-            </span>
-          </div>
+          查看参考模板
+        </Button>
+      </div>
+      
+      <p class="text-gray-500">
+        在此明确季度总目标及各维度核心指标，以数字化、可衡量的方式体现目标。目标从五大维度设定，着力点为"三升一降"原则。
+      </p>
+
+      <div class="overflow-x-auto">
+        <table class="w-full text-left border-collapse">
+          <thead>
+            <tr class="bg-gray-50">
+              <th class="p-3 border-b border-gray-200">维度</th>
+              <th class="p-3 border-b border-gray-200">着力点</th>
+              <th class="p-3 border-b border-gray-200">指标名称</th>
+              <th class="p-3 border-b border-gray-200">单位</th>
+              <th class="p-3 border-b border-gray-200">上年同期</th>
+              <th class="p-3 border-b border-gray-200">季度目标</th>
+              <th class="p-3 border-b border-gray-200">操作</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr
+              v-for="goal in dimensionGoals || []"
+              :key="goal.id"
+              class="border-b border-gray-100 hover:bg-gray-50"
+            >
+              <td class="p-3">
+                <div class="flex items-center gap-2">
+                  <component :is="getDimensionIcon(goal.dimension)" class="h-5 w-5 text-gray-400" />
+                  <span>{{ goal.dimension }}</span>
+                </div>
+              </td>
+              <td class="p-3">{{ goal.focusPoint }}</td>
+              <td class="p-3">{{ goal.title }}</td>
+              <td class="p-3">{{ goal.unit }}</td>
+              <td class="p-3">{{ goal.previousValue || '-' }}</td>
+              <td class="p-3">
+                <div class="grid grid-cols-2 gap-4">
+                  <div>
+                    <div class="text-xs text-gray-500">保底值</div>
+                    <div class="mt-1">{{ goal.baseValue || '-' }}</div>
+                  </div>
+                  <div>
+                    <div class="text-xs text-gray-500">冲刺值</div>
+                    <div class="mt-1">{{ goal.stretchValue || '-' }}</div>
+                  </div>
+                </div>
+              </td>
+              <td class="p-3">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  @click="editGoal(goal)"
+                >
+                  编辑
+                </Button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- 目标参考模板 -->
+    <Modal
+      v-if="showGoalExample"
+      title="目标设定参考模板"
+      @close="showGoalExample = false"
+    >
+      <div class="space-y-6">
+        <p class="text-gray-600">
+          目标设定应遵循"三升一降"原则，从五大维度出发，确保目标具体、可衡量、可实现。
+        </p>
+        
+        <div v-for="preset in PRESET_GOALS || []" :key="preset.dimension" class="space-y-4">
+          <h4 class="font-medium text-gray-900">{{ preset.dimension }}</h4>
           <div class="space-y-2">
-            <div class="text-sm text-gray-500">目标值</div>
-            <div class="grid grid-cols-2 gap-4">
-              <div class="bg-gray-50 rounded p-3">
-                <div class="text-xs text-gray-500">保底值</div>
-                <div class="mt-1 font-medium">{{ goal.baseValue }}{{ goal.unit }}</div>
-              </div>
-              <div class="bg-gray-50 rounded p-3">
-                <div class="text-xs text-gray-500">冲刺值</div>
-                <div class="mt-1 font-medium">{{ goal.stretchValue }}{{ goal.unit }}</div>
-              </div>
+            <div v-for="goal in preset.goals" :key="goal.title" class="bg-gray-50 p-3 rounded">
+              <div class="text-sm text-gray-900">{{ goal.title }}</div>
+              <div class="text-xs text-gray-500 mt-1">{{ goal.hint }}</div>
             </div>
           </div>
         </div>
       </div>
-    </section>
+    </Modal>
 
     <!-- 关键任务 -->
     <section class="space-y-4">
@@ -59,7 +166,7 @@
       </div>
       <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         <div
-          v-for="task in quarterTasks"
+          v-for="task in quarterTasks || []"
           :key="task.id"
           class="bg-white rounded-lg shadow-sm p-6 space-y-4"
         >
@@ -95,7 +202,7 @@
               <div class="h-2 bg-gray-100 rounded-full overflow-hidden">
                 <div
                   class="h-full bg-indigo-600 rounded-full transition-all duration-300"
-                  :style="{ width: getMonthProgress(task.startMonth, task.endMonth) + '%' }"
+                  :style="{ width: (task.startMonth && task.endMonth ? getMonthProgress(task.startMonth, task.endMonth) : 0) + '%' }"
                 ></div>
               </div>
             </div>
@@ -184,13 +291,108 @@
       <p class="text-gray-500">
         在此明确本季度目标的具体实施路径，包括管理思维、过程管理和结果管理三个层面。清晰的执行路径有助于团队明确方向并有效推进。
       </p>
-      
-      <textarea
-        v-model="howText"
-        rows="6"
-        class="block w-full bg-white text-gray-900 border border-gray-300 rounded-md p-2"
-        placeholder="在此填写执行路径与步骤，建议包含：&#10;1. 管理思维：目标管理、过程管理、结果管理&#10;2. 过程管理：追战略、追计划、追进度等九大追踪要素&#10;3. 结果管理：复盘业务与团队，发展团队，奖优罚劣"
-      />
+
+      <!-- 管理思维与解码 -->
+      <div class="space-y-4 bg-gray-50 p-4 rounded-lg">
+        <h4 class="font-medium text-gray-900">管理思维与解码</h4>
+        <div class="space-y-2">
+          <div class="flex items-center gap-2">
+            <span class="text-sm font-medium text-gray-700">目标管理：</span>
+            <span class="text-sm text-gray-600">设定目标、拆解目标、建立仪表盘、制定绩效、分析达成情况</span>
+          </div>
+          <div class="flex items-center gap-2">
+            <span class="text-sm font-medium text-gray-700">过程管理：</span>
+            <span class="text-sm text-gray-600">追战略(01)、追计划(02)、追进度(03)、追流程(04)、追工具(05)、追技能(06)、追习惯(07)、追氛围(08)、追机制(09)</span>
+          </div>
+          <div class="flex items-center gap-2">
+            <span class="text-sm font-medium text-gray-700">结果管理：</span>
+            <span class="text-sm text-gray-600">复盘业务与团队，发展团队，奖优罚劣</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- 维度执行路径表格 -->
+      <div class="overflow-x-auto">
+        <table class="w-full text-left border-collapse">
+          <thead>
+            <tr class="bg-gray-50">
+              <th class="p-3 border-b border-gray-200">维度</th>
+              <th class="p-3 border-b border-gray-200">着力点</th>
+              <th class="p-3 border-b border-gray-200">对应业务流</th>
+              <th class="p-3 border-b border-gray-200">关键环节</th>
+              <th class="p-3 border-b border-gray-200">实施步骤</th>
+              <th class="p-3 border-b border-gray-200">责任人</th>
+              <th class="p-3 border-b border-gray-200">时间节点</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr
+              v-for="dimension in DIMENSION_LIST"
+              :key="dimension"
+              class="border-b border-gray-100 hover:bg-gray-50"
+            >
+              <td class="p-3">
+                <div class="flex items-center gap-2">
+                  <component :is="getDimensionIcon(dimension)" class="h-5 w-5 text-gray-400" />
+                  <span>{{ dimension }}</span>
+                </div>
+              </td>
+              <td class="p-3">
+                <select
+                  v-model="howData[dimension].focusPoint"
+                  class="block w-full rounded-md border-gray-300 text-sm"
+                >
+                  <option v-for="point in FOCUS_POINTS[dimension]" :key="point.name" :value="point.name">
+                    {{ point.name }}
+                  </option>
+                </select>
+              </td>
+              <td class="p-3">
+                <select
+                  v-model="howData[dimension].businessFlow"
+                  class="block w-full rounded-md border-gray-300 text-sm"
+                >
+                  <option v-for="flow in BUSINESS_FLOWS[dimension]" :key="flow" :value="flow">
+                    {{ flow }}
+                  </option>
+                </select>
+              </td>
+              <td class="p-3">
+                <textarea
+                  v-model="howData[dimension].keySteps"
+                  rows="2"
+                  class="block w-full rounded-md border-gray-300 text-sm"
+                  :placeholder="`${dimension}关键环节...`"
+                />
+              </td>
+              <td class="p-3">
+                <textarea
+                  v-model="howData[dimension].implementation"
+                  rows="2"
+                  class="block w-full rounded-md border-gray-300 text-sm"
+                  :placeholder="`Q${currentQuarter.slice(1)}实施步骤...`"
+                />
+              </td>
+              <td class="p-3">
+                <input
+                  v-model="howData[dimension].owner"
+                  type="text"
+                  class="block w-full rounded-md border-gray-300 text-sm"
+                  placeholder="负责人"
+                />
+              </td>
+              <td class="p-3">
+                <input
+                  v-model="howData[dimension].timeline"
+                  type="text"
+                  class="block w-full rounded-md border-gray-300 text-sm"
+                  :placeholder="`Q${currentQuarter.slice(1)}时间节点`"
+                />
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
     </section>
 
     <!-- 参考案例弹窗 -->
@@ -229,7 +431,7 @@
     </Modal>
 
     <!-- 所需资源 -->
-    <section class="space-y-4">
+    <section class="space-y-6">
       <div class="flex items-center justify-between">
         <h3 class="text-2xl font-bold text-gray-900">所需资源</h3>
         <Button
@@ -240,48 +442,129 @@
           {{ showResourceSection ? '收起' : '展开' }}
         </Button>
       </div>
-      
+
+      <p class="text-gray-500">
+        在本模块中明确完成季度目标所需的资源，包括人力资源（内部/外部专业人士）、资金投入（研发经费、推广费）、工具与系统（ERP、CRM等）、培训与外部咨询服务等。资源需对应到具体的业务流和时间节点上。
+      </p>
+
       <div v-if="showResourceSection" class="space-y-4">
-        <p class="text-gray-500">
-          列出实现本季度目标所需的关键资源，包括人力、物力、财力等方面的具体需求。
-        </p>
-        
-        <div class="space-y-4">
-          <div class="space-y-2">
-            <label class="block text-sm font-medium text-gray-700">人力资源</label>
-            <textarea
-              v-model="resources.human"
-              rows="3"
-              class="block w-full bg-white text-gray-900 border border-gray-300 rounded-md p-2"
-              placeholder="例如：需要增加2名开发人员，1名产品经理..."
-            />
-          </div>
-          
-          <div class="space-y-2">
-            <label class="block text-sm font-medium text-gray-700">物力资源</label>
-            <textarea
-              v-model="resources.material"
-              rows="3"
-              class="block w-full bg-white text-gray-900 border border-gray-300 rounded-md p-2"
-              placeholder="例如：新增服务器2台，办公设备升级..."
-            />
-          </div>
-          
-          <div class="space-y-2">
-            <label class="block text-sm font-medium text-gray-700">财务预算</label>
-            <textarea
-              v-model="resources.financial"
-              rows="3"
-              class="block w-full bg-white text-gray-900 border border-gray-300 rounded-md p-2"
-              placeholder="例如：研发预算200万，市场推广预算100万..."
-            />
-          </div>
+        <div class="overflow-x-auto">
+          <table class="w-full text-left border-collapse">
+            <thead>
+              <tr class="bg-gray-50">
+                <th class="p-3 border-b border-gray-200">业务流</th>
+                <th class="p-3 border-b border-gray-200">对应维度/着力点</th>
+                <th class="p-3 border-b border-gray-200">所需资源</th>
+                <th class="p-3 border-b border-gray-200">提供方</th>
+                <th class="p-3 border-b border-gray-200">到位时间</th>
+                <th class="p-3 border-b border-gray-200">确认人</th>
+                <th class="p-3 border-b border-gray-200">操作</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr
+                v-for="(resource, index) in resourceList"
+                :key="index"
+                class="border-b border-gray-100 hover:bg-gray-50"
+              >
+                <td class="p-3">
+                  <select
+                    v-model="resource.businessFlow"
+                    class="block w-full rounded-md border-gray-300 text-sm"
+                  >
+                    <option
+                      v-for="flow in BUSINESS_FLOWS[resource.dimension]"
+                      :key="flow"
+                      :value="flow"
+                    >
+                      {{ flow }}
+                    </option>
+                  </select>
+                </td>
+                <td class="p-3">
+                  <div class="space-y-2">
+                    <select
+                      v-model="resource.dimension"
+                      class="block w-full rounded-md border-gray-300 text-sm"
+                      @change="handleResourceDimensionChange(index)"
+                    >
+                      <option v-for="dim in DIMENSION_LIST" :key="dim" :value="dim">
+                        {{ dim }}
+                      </option>
+                    </select>
+                    <select
+                      v-model="resource.focusPoint"
+                      class="block w-full rounded-md border-gray-300 text-sm"
+                    >
+                      <option
+                        v-for="point in FOCUS_POINTS[resource.dimension]"
+                        :key="point.name"
+                        :value="point.name"
+                      >
+                        {{ point.name }}
+                      </option>
+                    </select>
+                  </div>
+                </td>
+                <td class="p-3">
+                  <textarea
+                    v-model="resource.resources"
+                    rows="2"
+                    class="block w-full rounded-md border-gray-300 text-sm"
+                    placeholder="所需资源描述..."
+                  />
+                </td>
+                <td class="p-3">
+                  <input
+                    v-model="resource.provider"
+                    type="text"
+                    class="block w-full rounded-md border-gray-300 text-sm"
+                    placeholder="资源提供方"
+                  />
+                </td>
+                <td class="p-3">
+                  <input
+                    v-model="resource.timeline"
+                    type="text"
+                    class="block w-full rounded-md border-gray-300 text-sm"
+                    :placeholder="`Q${currentQuarter.slice(1)}时间节点`"
+                  />
+                </td>
+                <td class="p-3">
+                  <input
+                    v-model="resource.confirmer"
+                    type="text"
+                    class="block w-full rounded-md border-gray-300 text-sm"
+                    placeholder="确认人"
+                  />
+                </td>
+                <td class="p-3">
+                  <Button
+                    v-if="resourceList.length > 1"
+                    variant="ghost"
+                    size="sm"
+                    @click="removeResource(index)"
+                  >
+                    删除
+                  </Button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
         </div>
+
+        <Button
+          variant="outline"
+          size="sm"
+          @click="addResource"
+        >
+          添加资源项
+        </Button>
       </div>
     </section>
 
     <!-- 风险预案 -->
-    <section class="space-y-4">
+    <section class="space-y-6">
       <div class="flex items-center justify-between">
         <h3 class="text-2xl font-bold text-gray-900">风险预案</h3>
         <Button
@@ -292,48 +575,127 @@
           {{ showRiskSection ? '收起' : '展开' }}
         </Button>
       </div>
-      
+
+      <p class="text-gray-500">
+        明确季度目标推进过程中可能出现的风险及后果，并提前制定相应的预备方案和紧急措施。结合五大维度的重点环节，将风险管控纳入季度计划中。
+      </p>
+
       <div v-if="showRiskSection" class="space-y-4">
-        <p class="text-gray-500">
-          识别并列出可能影响季度目标达成的主要风险，以及相应的应对措施。
-        </p>
-        
-        <div class="space-y-4">
-          <div v-for="(risk, index) in risks" :key="index" class="space-y-2 p-4 bg-gray-50 rounded-lg">
-            <div class="flex items-center justify-between">
-              <div class="space-y-2 flex-grow">
-                <input
-                  v-model="risk.title"
-                  type="text"
-                  class="block w-full bg-white text-gray-900 border border-gray-300 rounded-md p-2"
-                  placeholder="风险描述"
-                />
-                <textarea
-                  v-model="risk.solution"
-                  rows="2"
-                  class="block w-full bg-white text-gray-900 border border-gray-300 rounded-md p-2"
-                  placeholder="应对措施"
-                />
-              </div>
-              <button
-                v-if="risks.length > 1"
-                type="button"
-                class="ml-2 text-gray-400 hover:text-red-600"
-                @click="removeRisk(index)"
+        <div class="overflow-x-auto">
+          <table class="w-full text-left border-collapse">
+            <thead>
+              <tr class="bg-gray-50">
+                <th class="p-3 border-b border-gray-200">风险点</th>
+                <th class="p-3 border-b border-gray-200">对应维度/着力点</th>
+                <th class="p-3 border-b border-gray-200">可能风险与后果</th>
+                <th class="p-3 border-b border-gray-200">预备方案</th>
+                <th class="p-3 border-b border-gray-200">支持者</th>
+                <th class="p-3 border-b border-gray-200">完成时间</th>
+                <th class="p-3 border-b border-gray-200">确认人</th>
+                <th class="p-3 border-b border-gray-200">操作</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr
+                v-for="(risk, index) in riskList"
+                :key="index"
+                class="border-b border-gray-100 hover:bg-gray-50"
               >
-                <TrashIcon class="h-4 w-4" />
-              </button>
-            </div>
-          </div>
-          
-          <Button
-            variant="outline"
-            size="sm"
-            @click="addRisk"
-          >
-            添加风险项
-          </Button>
+                <td class="p-3">
+                  <input
+                    v-model="risk.riskPoint"
+                    type="text"
+                    class="block w-full rounded-md border-gray-300 text-sm"
+                    placeholder="风险点描述..."
+                  />
+                </td>
+                <td class="p-3">
+                  <div class="space-y-2">
+                    <select
+                      v-model="risk.dimension"
+                      class="block w-full rounded-md border-gray-300 text-sm"
+                      @change="handleRiskDimensionChange(index)"
+                    >
+                      <option v-for="dim in DIMENSION_LIST" :key="dim" :value="dim">
+                        {{ dim }}
+                      </option>
+                    </select>
+                    <select
+                      v-model="risk.focusPoint"
+                      class="block w-full rounded-md border-gray-300 text-sm"
+                    >
+                      <option
+                        v-for="point in FOCUS_POINTS[risk.dimension]"
+                        :key="point.name"
+                        :value="point.name"
+                      >
+                        {{ point.name }}
+                      </option>
+                    </select>
+                  </div>
+                </td>
+                <td class="p-3">
+                  <textarea
+                    v-model="risk.consequences"
+                    rows="2"
+                    class="block w-full rounded-md border-gray-300 text-sm"
+                    placeholder="可能的风险与后果..."
+                  />
+                </td>
+                <td class="p-3">
+                  <textarea
+                    v-model="risk.mitigation"
+                    rows="2"
+                    class="block w-full rounded-md border-gray-300 text-sm"
+                    placeholder="预备方案与应对措施..."
+                  />
+                </td>
+                <td class="p-3">
+                  <input
+                    v-model="risk.supporter"
+                    type="text"
+                    class="block w-full rounded-md border-gray-300 text-sm"
+                    placeholder="支持者"
+                  />
+                </td>
+                <td class="p-3">
+                  <input
+                    v-model="risk.timeline"
+                    type="text"
+                    class="block w-full rounded-md border-gray-300 text-sm"
+                    :placeholder="`Q${currentQuarter.slice(1)}时间节点`"
+                  />
+                </td>
+                <td class="p-3">
+                  <input
+                    v-model="risk.confirmer"
+                    type="text"
+                    class="block w-full rounded-md border-gray-300 text-sm"
+                    placeholder="确认人"
+                  />
+                </td>
+                <td class="p-3">
+                  <Button
+                    v-if="riskList.length > 1"
+                    variant="ghost"
+                    size="sm"
+                    @click="removeRisk(index)"
+                  >
+                    删除
+                  </Button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
         </div>
+
+        <Button
+          variant="outline"
+          size="sm"
+          @click="addRisk"
+        >
+          添加风险项
+        </Button>
       </div>
     </section>
 
@@ -371,17 +733,39 @@ import { ref, computed } from 'vue'
 import Card from '../ui/Card.vue'
 import Button from '../ui/Button.vue'
 import Modal from '../ui/Modal.vue'
-import { PencilIcon, TrashIcon } from '@heroicons/vue/20/solid'
 import QuarterTaskModal from './QuarterTaskModal.vue'
+import { 
+  PencilIcon, 
+  TrashIcon,
+  CubeIcon,
+  UserGroupIcon,
+  BuildingStorefrontIcon,
+  UsersIcon,
+  BanknotesIcon
+} from '@heroicons/vue/20/solid'
+import { DIMENSIONS, DIMENSION_LIST, FOCUS_POINTS, PRESET_GOALS } from '../../constants/dimensions'
+import { BUSINESS_FLOWS } from '../../constants/businessFlows'
+import type { Goal } from '../../types/goal'
 import type { Task } from '../../types/task'
 
-// 月份映射
-const MONTH_MAPPING = {
-  'Q1': { '1月': 1, '2月': 2, '3月': 3 },
-  'Q2': { '4月': 4, '5月': 5, '6月': 6 },
-  'Q3': { '7月': 7, '8月': 8, '9月': 9 },
-  'Q4': { '10月': 10, '11月': 11, '12月': 12 }
-}
+// 基本信息
+const basicInfo = ref({
+  planName: '',
+  planYear: '2024',
+  groupNumber: '',
+  score: '',
+})
+
+import { MONTH_MAPPING } from '../../constants/months'
+
+// 季度选择相关
+const quarters = [
+  { id: 'Q1', name: '2024年第1季度' },
+  { id: 'Q2', name: '2024年第2季度' },
+  { id: 'Q3', name: '2024年第3季度' },
+  { id: 'Q4', name: '2024年第4季度' }
+]
+const currentQuarter = ref('Q1')
 
 // 价值类型定义
 const valueTypes = [
@@ -418,52 +802,107 @@ const values = ref({
   team: '',
   company: ''
 })
-const howText = ref('')
-
-// 季度选项
-const quarters = [
-  { id: 'Q1', name: '第一季度' },
-  { id: 'Q2', name: '第二季度' },
-  { id: 'Q3', name: '第三季度' },
-  { id: 'Q4', name: '第四季度' },
-]
-
-const currentQuarter = ref('Q1')
+// 维度执行路径数据
+const howData = ref(
+  DIMENSION_LIST.reduce((acc, dimension) => ({
+    ...acc,
+    [dimension]: {
+      focusPoint: FOCUS_POINTS[dimension]?.[0]?.name ?? '',
+      businessFlow: BUSINESS_FLOWS[dimension]?.[0] ?? '',
+      keySteps: '',
+      implementation: '',
+      owner: '',
+      timeline: ''
+    }
+  }), {})
+)
 
 // 资源和风险管理
 const showResourceSection = ref(false)
 const showRiskSection = ref(false)
 
-const resources = ref({
-  human: '',
-  material: '',
-  financial: ''
-})
-
-const risks = ref([
+// 资源列表数据
+const resourceList = ref([
   {
-    title: '',
-    solution: ''
+    dimension: DIMENSION_LIST[0] ?? '',
+    focusPoint: FOCUS_POINTS[DIMENSION_LIST[0]]?.[0]?.name ?? '',
+    businessFlow: BUSINESS_FLOWS[DIMENSION_LIST[0]]?.[0] ?? '',
+    resources: '',
+    provider: '',
+    timeline: '',
+    confirmer: ''
   }
 ])
 
+// 资源相关方法
+function addResource() {
+  const defaultDimension = DIMENSION_LIST[0]
+  resourceList.value.push({
+    dimension: defaultDimension,
+    focusPoint: FOCUS_POINTS[defaultDimension][0].name,
+    businessFlow: BUSINESS_FLOWS[defaultDimension][0],
+    resources: '',
+    provider: '',
+    timeline: '',
+    confirmer: ''
+  })
+}
+
+function removeResource(index: number) {
+  resourceList.value.splice(index, 1)
+}
+
+function handleResourceDimensionChange(index: number) {
+  const resource = resourceList.value[index]
+  resource.focusPoint = FOCUS_POINTS[resource.dimension][0].name
+  resource.businessFlow = BUSINESS_FLOWS[resource.dimension][0]
+}
+
+// 风险列表数据
+const riskList = ref([
+  {
+    dimension: DIMENSION_LIST[0] ?? '',
+    focusPoint: FOCUS_POINTS[DIMENSION_LIST[0]]?.[0]?.name ?? '',
+    riskPoint: '',
+    consequences: '',
+    mitigation: '',
+    supporter: '',
+    timeline: '',
+    confirmer: ''
+  }
+])
+
+// 风险相关方法
 function addRisk() {
-  risks.value.push({
-    title: '',
-    solution: ''
+  const defaultDimension = DIMENSION_LIST[0]
+  riskList.value.push({
+    dimension: defaultDimension,
+    focusPoint: FOCUS_POINTS[defaultDimension][0].name,
+    riskPoint: '',
+    consequences: '',
+    mitigation: '',
+    supporter: '',
+    timeline: '',
+    confirmer: ''
   })
 }
 
 function removeRisk(index: number) {
-  risks.value.splice(index, 1)
+  riskList.value.splice(index, 1)
+}
+
+function handleRiskDimensionChange(index: number) {
+  const risk = riskList.value[index]
+  risk.focusPoint = FOCUS_POINTS[risk.dimension][0].name
 }
 
 // 获取月份进度
 function getMonthProgress(startMonth: string, endMonth: string): number {
-  const quarterMatch = currentQuarter.value.match(/Q(\d)/)
-  if (!quarterMatch) return 0
+  if (!currentQuarter.value) return 0
+  const quarterNum = currentQuarter.value.slice(1)
+  if (!quarterNum) return 0
   
-  const monthMap = MONTH_MAPPING[`Q${quarterMatch[1]}`] || {}
+  const monthMap = MONTH_MAPPING[`Q${quarterNum}`] || {}
   const startMonthNum = monthMap[startMonth]
   const endMonthNum = monthMap[endMonth]
   if (!startMonthNum || !endMonthNum) return 0
@@ -473,36 +912,56 @@ function getMonthProgress(startMonth: string, endMonth: string): number {
   return Math.min((monthsSpent / totalMonths) * 100, 100)
 }
 
-// 示例数据
-const quarterGoals = [
-  {
-    id: 1,
-    title: '提升产品质量',
-    dimension: '产品',
-    baseValue: 95,
-    stretchValue: 98,
-    unit: '%'
-  },
-  // ... 更多目标
-]
+// 维度目标数据
+const dimensionGoals = ref<Goal[]>(
+  PRESET_GOALS.flatMap(preset => 
+    preset.goals.map((goal, index) => ({
+      id: Math.random(),
+      title: goal.title,
+      dimension: preset.dimension,
+      focusPoint: FOCUS_POINTS[preset.dimension][0].name,
+      unit: goal.unit,
+      baseValue: null,
+      stretchValue: null,
+      previousValue: null,
+      hint: goal.hint
+    }))
+  )
+)
+
+// 获取维度图标
+function getDimensionIcon(dimension: string) {
+  switch(dimension) {
+    case DIMENSIONS.PRODUCT:
+      return CubeIcon
+    case DIMENSIONS.CUSTOMER:
+      return UserGroupIcon
+    case DIMENSIONS.CHANNEL:
+      return BuildingStorefrontIcon
+    case DIMENSIONS.TEAM:
+      return UsersIcon
+    case DIMENSIONS.FINANCE:
+      return BanknotesIcon
+    default:
+      return CubeIcon
+  }
+}
+
+// 编辑目标
+function editGoal(goal: Goal) {
+  // TODO: Implement goal editing modal
+  console.log('Edit goal:', goal)
+}
+
+// 显示目标示例
+const showGoalExample = ref(false)
+
+// 任务相关状态
 
 // 任务相关状态
 const showTaskModal = ref(false)
 const editingTask = ref<Task | undefined>()
-const quarterTasks = ref<Task[]>([
-  {
-    id: 1,
-    title: '优化产品性能',
-    description: '提升核心功能的响应速度',
-    owner: '张三',
-    startMonth: '1月',
-    endMonth: '3月',
-    dimension: '产品',
-    focusPoint: 'performance',
-    businessFlow: 'development',
-    keyResults: []
-  }
-])
+const quarterTasks = ref<Task[]>([])
 
 // 任务操作方法
 function editTask(task: Task) {
@@ -544,4 +1003,4 @@ const quarterMilestones = [
   },
   // ... 更多里程碑
 ]
-</script>                   
+</script>                                                                         
