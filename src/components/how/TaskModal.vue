@@ -41,28 +41,54 @@
 
         <!-- 时间区间 -->
         <div class="grid grid-cols-2 gap-4">
-          <div>
-            <label class="block text-sm font-medium text-gray-700 mb-1">
-              开始月份
-            </label>
-            <Select
-              v-model="formData.startMonth"
-              :options="availableMonths"
-              placeholder="选择开始月份"
-              position="bottom"
-            />
-          </div>
-          <div>
-            <label class="block text-sm font-medium text-gray-700 mb-1">
-              完成月份
-            </label>
-            <Select
-              v-model="formData.endMonth"
-              :options="availableMonths"
-              placeholder="选择完成月份"
-              position="bottom"
-            />
-          </div>
+          <template v-if="planLevel === 'year'">
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">
+                开始季度
+              </label>
+              <Select
+                v-model="formData.startDate"
+                :options="quarterOptions"
+                placeholder="选择开始季度"
+                position="bottom"
+              />
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">
+                完成季度
+              </label>
+              <Select
+                v-model="formData.endDate"
+                :options="quarterOptions"
+                placeholder="选择完成季度"
+                position="bottom"
+              />
+            </div>
+          </template>
+          <template v-else>
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">
+                开始月份
+              </label>
+              <Select
+                v-model="formData.startMonth"
+                :options="availableMonths"
+                placeholder="选择开始月份"
+                position="bottom"
+              />
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">
+                完成月份
+              </label>
+              <Select
+                v-model="formData.endMonth"
+                :options="availableMonths"
+                placeholder="选择完成月份"
+                position="bottom"
+              />
+            </div>
+          </template>
         </div>
 
         <!-- 任务描述 -->
@@ -320,10 +346,20 @@ const props = defineProps<{
   task?: Task | null
   isNested?: boolean
   currentQuarter?: string
+  planLevel?: 'year' | 'quarter' | 'month'
 }>()
+
+// 季度选项
+const quarterOptions = [
+  { value: 'Q1', label: '第1季度' },
+  { value: 'Q2', label: '第2季度' },
+  { value: 'Q3', label: '第3季度' },
+  { value: 'Q4', label: '第4季度' }
+]
 
 // 可选月份
 const availableMonths = computed(() => {
+  if (props.planLevel === 'year') return []
   const quarter = props.currentQuarter || 'Q1'
   const quarterMonths = getQuarterMonths(quarter)
   return Object.entries(quarterMonths).map(([label, value]) => ({
@@ -360,6 +396,8 @@ const isOpen = ref(true)
 const formData = ref({
   title: props.task?.title ?? '',
   owner: props.task?.owner ?? '',
+  startDate: props.task?.startDate ?? '',
+  endDate: props.task?.endDate ?? '',
   startMonth: props.task?.startMonth ?? null,
   endMonth: props.task?.endMonth ?? null,
   description: props.task?.description ?? '',
@@ -468,12 +506,12 @@ const isMonthOrderValid = computed(() => {
 const isValid = computed(() => {
   const hasBasicInfo = formData.value.title.trim() !== '' &&
     formData.value.owner.trim() !== '' &&
-    formData.value.startMonth !== null &&
-    formData.value.endMonth !== null &&
+    ((props.planLevel === 'year' && formData.value.startDate && formData.value.endDate) ||
+     (props.planLevel !== 'year' && formData.value.startMonth !== null && formData.value.endMonth !== null)) &&
     formData.value.dimension !== '' &&
     formData.value.focusPoint !== '' &&
     formData.value.businessFlow.trim() !== '' &&
-    isMonthOrderValid.value
+    (props.planLevel === 'year' ? true : isMonthOrderValid.value)
 
   // 检查关键结果的有效性
   const hasValidKeyResults = formData.value.keyResults.length > 0 && 
@@ -508,10 +546,10 @@ const handleSave = () => {
     id: props.task?.id ?? 0,
     title: formData.value.title,
     owner: formData.value.owner,
-    startDate: '', // Deprecated: Keep for backward compatibility
-    endDate: '',   // Deprecated: Keep for backward compatibility
-    startMonth: formData.value.startMonth,
-    endMonth: formData.value.endMonth,
+    startDate: props.planLevel === 'year' ? formData.value.startDate : '',
+    endDate: props.planLevel === 'year' ? formData.value.endDate : '',
+    startMonth: props.planLevel !== 'year' ? formData.value.startMonth : null,
+    endMonth: props.planLevel !== 'year' ? formData.value.endMonth : null,
     description: formData.value.description,
     dimension: formData.value.dimension,
     focusPoint: formData.value.focusPoint,

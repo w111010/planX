@@ -12,7 +12,8 @@
         <h3 class="text-lg font-semibold text-gray-900">{{ title }}</h3>
         <div class="flex items-center gap-2 text-sm text-gray-500">
           <span>负责人：{{ owner }}</span>
-          <span>{{ formatMonth(startMonth) }} - {{ formatMonth(endMonth) }}</span>
+          <span v-if="planLevel === 'year'">{{ formatQuarter(startDate) }} - {{ formatQuarter(endDate) }}</span>
+          <span v-else>{{ formatMonth(startMonth) }} - {{ formatMonth(endMonth) }}</span>
         </div>
         <div class="flex flex-wrap items-center gap-2">
           <span 
@@ -162,8 +163,15 @@ import { BUSINESS_FLOWS } from '../../constants/businessFlows'
 import FileUploadButton from '../ui/FileUploadButton.vue'
 
 const props = defineProps<Task & {
-  isCompact?: boolean
+  isCompact?: boolean,
+  planLevel?: 'year' | 'quarter' | 'month'
 }>()
+
+// Format quarter (Q1-Q4)
+function formatQuarter(quarter: string) {
+  if (!quarter) return ''
+  return quarter.replace(/Q(\d)/, '第$1季度')
+}
 
 const emit = defineEmits<{
   edit: [Task]
