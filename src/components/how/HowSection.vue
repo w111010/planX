@@ -136,6 +136,7 @@
     <TaskModal
       v-if="showNewTaskModal"
       :task="editingTask"
+      :current-quarter="currentQuarter"
       @close="closeTaskModal"
       @save="handleModalSave"
     />
@@ -144,6 +145,7 @@
     <TaskModal
       v-if="showEditModal"
       :task="editingTask"
+      :current-quarter="currentQuarter"
       @close="showEditModal = false"
       @save="handleTaskSave"
     />
@@ -151,7 +153,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from 'vue'
+import { ref, computed, inject } from 'vue'
 import {
   PlusIcon,
   MagnifyingGlassIcon,
@@ -176,6 +178,7 @@ const viewOptions = [
 
 const currentView = ref('list')
 const currentListView = ref('detailed')
+const currentQuarter = inject('currentQuarter', ref('Q1'))
 
 // 列表视图选项
 const listViewOptions = [

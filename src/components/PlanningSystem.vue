@@ -10,7 +10,6 @@
             class="group inline-flex items-center gap-x-2 text-gray-900 hover:text-gray-600 transition-colors py-2 px-1"
             @click="toggleYearDropdown"
           >
-            <span>{{ selectedYear }}年</span>
             <ChevronDownIcon
               :class="[
                 showYearDropdown ? 'rotate-180 transform' : '',
@@ -34,7 +33,7 @@
             ]"
             @click="selectYear(year)"
           >
-            {{ year }}年
+            {{ year }}
           </li>
         </ul>
       </div>

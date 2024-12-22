@@ -42,25 +42,24 @@
         <!-- 时间区间 -->
         <div class="grid grid-cols-2 gap-4">
           <div>
-            <label class="block text-sm font-medium text-gray-700 mb-1 flex items-center justify-between">
-              <span>开始季度</span>
-              <span class="text-xs text-gray-500">年度计划按季度规划</span>
+            <label class="block text-sm font-medium text-gray-700 mb-1">
+              开始月份
             </label>
             <Select
-              v-model="formData.startDate"
-              :options="quarterOptions"
-              placeholder="选择开始季度"
+              v-model="formData.startMonth"
+              :options="availableMonths"
+              placeholder="选择开始月份"
               position="bottom"
             />
           </div>
           <div>
             <label class="block text-sm font-medium text-gray-700 mb-1">
-              完成季度
+              完成月份
             </label>
             <Select
-              v-model="formData.endDate"
-              :options="quarterOptions"
-              placeholder="选择完成季度"
+              v-model="formData.endMonth"
+              :options="availableMonths"
+              placeholder="选择完成月份"
               position="bottom"
             />
           </div>
@@ -300,7 +299,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from 'vue'
+import { ref, computed, watch } from 'vue'
 import { PlusIcon, XMarkIcon, TrashIcon } from '@heroicons/vue/20/solid'
 import Button from '../ui/Button.vue'
 import Input from '../ui/Input.vue'
@@ -310,18 +309,46 @@ import type { Task, KeyResult, Metric, Attachment } from '../../types/task'
 import { FOCUS_POINTS, DIMENSION_LIST, DIMENSIONS } from '../../constants/dimensions'
 import { BUSINESS_FLOWS } from '../../constants/businessFlows'
 
-// 季度选项
-const quarterOptions = computed(() => [
-  { value: '2024-03-31', label: '第一季度 (Q1)' },
-  { value: '2024-06-30', label: '第二季度 (Q2)' },
-  { value: '2024-09-30', label: '第三季度 (Q3)' },
-  { value: '2024-12-31', label: '第四季度 (Q4)' }
-])
+import { MONTH_MAPPING } from '../../constants/months'
+
+// 获取当前季度的月份范围
+const getQuarterMonths = (quarter: string) => {
+  return MONTH_MAPPING[quarter as keyof typeof MONTH_MAPPING] || MONTH_MAPPING.Q1
+}
 
 const props = defineProps<{
   task?: Task | null
   isNested?: boolean
+  currentQuarter?: string
 }>()
+
+// 可选月份
+const availableMonths = computed(() => {
+  const quarter = props.currentQuarter || 'Q1'
+  const quarterMonths = getQuarterMonths(quarter)
+  return Object.entries(quarterMonths).map(([label, value]) => ({
+    value,
+    label
+  }))
+})
+
+// 监听季度变化，重置月份如果不在当前季度范围内
+watch(() => props.currentQuarter, (newQuarter) => {
+  if (!newQuarter) return
+  
+  const quarterMonths = getQuarterMonths(newQuarter)
+  const monthValues = Object.values(quarterMonths)
+  
+  // Reset start month if not in range
+  if (formData.value.startMonth && !monthValues.includes(formData.value.startMonth)) {
+    formData.value.startMonth = null
+  }
+  
+  // Reset end month if not in range
+  if (formData.value.endMonth && !monthValues.includes(formData.value.endMonth)) {
+    formData.value.endMonth = null
+  }
+})
 
 const emit = defineEmits<{
   close: []
@@ -333,8 +360,8 @@ const isOpen = ref(true)
 const formData = ref({
   title: props.task?.title ?? '',
   owner: props.task?.owner ?? '',
-  startDate: props.task?.startDate ?? '',
-  endDate: props.task?.endDate ?? '',
+  startMonth: props.task?.startMonth ?? null,
+  endMonth: props.task?.endMonth ?? null,
   description: props.task?.description ?? '',
   dimension: props.task?.dimension ?? '',
   focusPoint: props.task?.focusPoint ?? '',
@@ -432,14 +459,21 @@ const removeAttachment = (kr: KeyResult, index: number) => {
   }
 }
 
+// 月份顺序验证
+const isMonthOrderValid = computed(() => {
+  if (!formData.value.startMonth || !formData.value.endMonth) return true
+  return formData.value.startMonth <= formData.value.endMonth
+})
+
 const isValid = computed(() => {
   const hasBasicInfo = formData.value.title.trim() !== '' &&
     formData.value.owner.trim() !== '' &&
-    formData.value.startDate !== '' &&
-    formData.value.endDate !== '' &&
+    formData.value.startMonth !== null &&
+    formData.value.endMonth !== null &&
     formData.value.dimension !== '' &&
     formData.value.focusPoint !== '' &&
-    formData.value.businessFlow.trim() !== ''
+    formData.value.businessFlow.trim() !== '' &&
+    isMonthOrderValid.value
 
   // 检查关键结果的有效性
   const hasValidKeyResults = formData.value.keyResults.length > 0 && 
@@ -474,8 +508,10 @@ const handleSave = () => {
     id: props.task?.id ?? 0,
     title: formData.value.title,
     owner: formData.value.owner,
-    startDate: formData.value.startDate,
-    endDate: formData.value.endDate,
+    startDate: '', // Deprecated: Keep for backward compatibility
+    endDate: '',   // Deprecated: Keep for backward compatibility
+    startMonth: formData.value.startMonth,
+    endMonth: formData.value.endMonth,
     description: formData.value.description,
     dimension: formData.value.dimension,
     focusPoint: formData.value.focusPoint,
