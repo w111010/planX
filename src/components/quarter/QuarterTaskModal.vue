@@ -110,6 +110,162 @@
             </div>
           </div>
         </div>
+
+        <!-- 分类选择 -->
+        <div class="grid grid-cols-2 gap-4">
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">
+              着力点{{ !formData.dimension ? ' (请先选择维度)' : '' }}
+            </label>
+            <Select
+              v-model="formData.focusPoint"
+              :options="availableFocusPoints"
+              placeholder="选择着力点"
+              :disabled="!formData.dimension"
+              position="top"
+            />
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">
+              业务流程
+            </label>
+            <Select
+              v-model="formData.businessFlow"
+              :options="businessFlowOptions"
+              placeholder="选择业务流程"
+              :disabled="!formData.dimension"
+              position="top"
+            />
+          </div>
+        </div>
+
+        <!-- 关键结果 -->
+        <div class="space-y-4">
+          <div class="flex items-center justify-between">
+            <h4 class="text-sm font-medium text-gray-900">关键结果</h4>
+            <Button
+              variant="outline"
+              size="sm"
+              @click="addKeyResult"
+            >
+              添加关键结果
+            </Button>
+          </div>
+
+          <div 
+            v-for="(kr, index) in formData.keyResults" 
+            :key="index"
+            class="bg-gray-50 rounded-lg p-4 space-y-4"
+          >
+            <div class="flex items-center justify-between">
+              <div class="flex-1 mr-4">
+                <Input
+                  v-model="kr.name"
+                  placeholder="关键结果名称"
+                />
+              </div>
+              <Select
+                v-model="kr.type"
+                :options="keyResultTypeOptions"
+                placeholder="选择类型"
+              />
+              <button
+                type="button"
+                class="ml-2 text-gray-400 hover:text-red-600"
+                @click="removeKeyResult(index)"
+              >
+                <TrashIcon class="h-4 w-4" />
+              </button>
+            </div>
+
+            <!-- 指标编辑 -->
+            <div class="space-y-2">
+              <div class="flex items-center justify-between">
+                <div class="text-sm font-medium text-gray-700">数据指标</div>
+                <Button
+                  variant="text"
+                  size="sm"
+                  @click="addMetric(kr)"
+                >
+                  添加指标
+                </Button>
+              </div>
+              
+              <div 
+                v-for="(metric, mIndex) in kr.metrics" 
+                :key="mIndex"
+                class="flex items-center gap-2"
+              >
+                <Input
+                  v-model="metric.name"
+                  placeholder="指标名称"
+                  class="flex-1"
+                />
+                <Input
+                  v-model.number="metric.target"
+                  type="number"
+                  placeholder="目标值"
+                  class="w-24"
+                />
+                <Input
+                  v-model="metric.unit"
+                  placeholder="单位"
+                  class="w-20"
+                />
+                <button
+                  type="button"
+                  class="text-gray-400 hover:text-red-600"
+                  @click="removeMetric(kr, mIndex)"
+                >
+                  <XMarkIcon class="h-4 w-4" />
+                </button>
+              </div>
+            </div>
+
+            <!-- 附件编辑 -->
+            <div class="space-y-2">
+              <div class="flex items-center justify-between">
+                <div class="text-sm font-medium text-gray-700">相关附件</div>
+                <Button
+                  variant="text"
+                  size="sm"
+                  @click="addAttachment(kr)"
+                >
+                  添加附件
+                </Button>
+              </div>
+              
+              <div 
+                v-for="(attachment, aIndex) in kr.attachments" 
+                :key="aIndex"
+                class="flex items-center gap-2"
+              >
+                <Select
+                  v-model="attachment.type"
+                  :options="attachmentTypeOptions"
+                  class="w-24"
+                />
+                <Input
+                  v-model="attachment.name"
+                  placeholder="名称"
+                  class="flex-1"
+                />
+                <Input
+                  v-model="attachment.url"
+                  :placeholder="attachment.type === 'file' ? '文件路径' : '链接地址'"
+                  class="flex-1"
+                />
+                <button
+                  type="button"
+                  class="text-gray-400 hover:text-red-600"
+                  @click="removeAttachment(kr, aIndex)"
+                >
+                  <XMarkIcon class="h-4 w-4" />
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
 
       <!-- 弹窗底部 -->
@@ -140,8 +296,10 @@ import BaseModal from '../ui/BaseModal.vue'
 import Button from '../ui/Button.vue'
 import Input from '../ui/Input.vue'
 import Select from '../ui/Select.vue'
-import { DIMENSION_LIST } from '../../constants/dimensions'
-import type { Task } from '../../types/task'
+import { TrashIcon, XMarkIcon } from '@heroicons/vue/20/solid'
+import { DIMENSION_LIST, FOCUS_POINTS } from '../../constants/dimensions'
+import { BUSINESS_FLOWS } from '../../constants/businessFlows'
+import type { Task, KeyResult, Metric, Attachment } from '../../types/task'
 
 const props = defineProps<{
   isOpen: boolean
@@ -164,6 +322,9 @@ const formData = ref({
   endMonth: props.task?.endDate || '',
   description: props.task?.description || '',
   dimension: props.task?.dimension || '',
+  focusPoint: props.task?.focusPoint || '',
+  businessFlow: props.task?.businessFlow || '',
+  keyResults: props.task?.keyResults || []
 })
 
 // 可选月份
@@ -197,12 +358,93 @@ const isValid = computed(() => {
     formData.value.startMonth &&
     formData.value.endMonth &&
     formData.value.dimension &&
-    isMonthOrderValid.value
+    formData.value.focusPoint &&
+    formData.value.businessFlow &&
+    isMonthOrderValid.value &&
+    formData.value.keyResults.every(kr => 
+      kr.name && 
+      kr.type && 
+      kr.metrics.every(m => m.name && m.target && m.unit) &&
+      kr.attachments.every(a => a.type && a.name && a.url)
+    )
 })
 
 // 选择维度
 function selectDimension(dimension: string) {
   formData.value.dimension = dimension
+  formData.value.focusPoint = ''
+  formData.value.businessFlow = ''
+}
+
+// 着力点选项
+const availableFocusPoints = computed(() => {
+  if (!formData.value.dimension) return []
+  return FOCUS_POINTS[formData.value.dimension].map(fp => ({
+    value: fp.id,
+    label: fp.name
+  }))
+})
+
+// 业务流程选项
+const businessFlowOptions = computed(() => {
+  if (!formData.value.dimension) return []
+  return BUSINESS_FLOWS[formData.value.dimension].map(bf => ({
+    value: bf.id,
+    label: bf.name
+  }))
+})
+
+// 关键结果类型选项
+const keyResultTypeOptions = [
+  { value: 'process', label: '流程' },
+  { value: 'skill', label: '技能' },
+  { value: 'tool', label: '工具' },
+  { value: 'mechanism', label: '机制' },
+  { value: 'event', label: '事件' }
+]
+
+// 附件类型选项
+const attachmentTypeOptions = [
+  { value: 'file', label: '文件' },
+  { value: 'link', label: '链接' }
+]
+
+// 关键结果操作
+function addKeyResult() {
+  formData.value.keyResults.push({
+    name: '',
+    type: '',
+    metrics: [],
+    attachments: []
+  })
+}
+
+function removeKeyResult(index: number) {
+  formData.value.keyResults.splice(index, 1)
+}
+
+function addMetric(kr: KeyResult) {
+  kr.metrics.push({
+    name: '',
+    target: 0,
+    unit: ''
+  })
+}
+
+function removeMetric(kr: KeyResult, index: number) {
+  kr.metrics.splice(index, 1)
+}
+
+function addAttachment(kr: KeyResult) {
+  kr.attachments.push({
+    type: 'file',
+    name: '',
+    url: ''
+  })
+}
+
+function removeAttachment(kr: KeyResult, index: number) {
+  kr.attachments.splice(index, 1)
 }
 
 // 提交表单

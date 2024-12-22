@@ -228,6 +228,115 @@
       </div>
     </Modal>
 
+    <!-- 所需资源 -->
+    <section class="space-y-4">
+      <div class="flex items-center justify-between">
+        <h3 class="text-2xl font-bold text-gray-900">所需资源</h3>
+        <Button
+          variant="outline"
+          size="sm"
+          @click="showResourceSection = !showResourceSection"
+        >
+          {{ showResourceSection ? '收起' : '展开' }}
+        </Button>
+      </div>
+      
+      <div v-if="showResourceSection" class="space-y-4">
+        <p class="text-gray-500">
+          列出实现本季度目标所需的关键资源，包括人力、物力、财力等方面的具体需求。
+        </p>
+        
+        <div class="space-y-4">
+          <div class="space-y-2">
+            <label class="block text-sm font-medium text-gray-700">人力资源</label>
+            <textarea
+              v-model="resources.human"
+              rows="3"
+              class="block w-full bg-white text-gray-900 border border-gray-300 rounded-md p-2"
+              placeholder="例如：需要增加2名开发人员，1名产品经理..."
+            />
+          </div>
+          
+          <div class="space-y-2">
+            <label class="block text-sm font-medium text-gray-700">物力资源</label>
+            <textarea
+              v-model="resources.material"
+              rows="3"
+              class="block w-full bg-white text-gray-900 border border-gray-300 rounded-md p-2"
+              placeholder="例如：新增服务器2台，办公设备升级..."
+            />
+          </div>
+          
+          <div class="space-y-2">
+            <label class="block text-sm font-medium text-gray-700">财务预算</label>
+            <textarea
+              v-model="resources.financial"
+              rows="3"
+              class="block w-full bg-white text-gray-900 border border-gray-300 rounded-md p-2"
+              placeholder="例如：研发预算200万，市场推广预算100万..."
+            />
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 风险预案 -->
+    <section class="space-y-4">
+      <div class="flex items-center justify-between">
+        <h3 class="text-2xl font-bold text-gray-900">风险预案</h3>
+        <Button
+          variant="outline"
+          size="sm"
+          @click="showRiskSection = !showRiskSection"
+        >
+          {{ showRiskSection ? '收起' : '展开' }}
+        </Button>
+      </div>
+      
+      <div v-if="showRiskSection" class="space-y-4">
+        <p class="text-gray-500">
+          识别并列出可能影响季度目标达成的主要风险，以及相应的应对措施。
+        </p>
+        
+        <div class="space-y-4">
+          <div v-for="(risk, index) in risks" :key="index" class="space-y-2 p-4 bg-gray-50 rounded-lg">
+            <div class="flex items-center justify-between">
+              <div class="space-y-2 flex-grow">
+                <input
+                  v-model="risk.title"
+                  type="text"
+                  class="block w-full bg-white text-gray-900 border border-gray-300 rounded-md p-2"
+                  placeholder="风险描述"
+                />
+                <textarea
+                  v-model="risk.solution"
+                  rows="2"
+                  class="block w-full bg-white text-gray-900 border border-gray-300 rounded-md p-2"
+                  placeholder="应对措施"
+                />
+              </div>
+              <button
+                v-if="risks.length > 1"
+                type="button"
+                class="ml-2 text-gray-400 hover:text-red-600"
+                @click="removeRisk(index)"
+              >
+                <TrashIcon class="h-4 w-4" />
+              </button>
+            </div>
+          </div>
+          
+          <Button
+            variant="outline"
+            size="sm"
+            @click="addRisk"
+          >
+            添加风险项
+          </Button>
+        </div>
+      </div>
+    </section>
+
     <!-- 里程碑 -->
     <section class="space-y-4">
       <h3 class="text-2xl font-bold text-gray-900">里程碑</h3>
@@ -321,6 +430,34 @@ const quarters = [
 
 const currentQuarter = ref('Q1')
 
+// 资源和风险管理
+const showResourceSection = ref(false)
+const showRiskSection = ref(false)
+
+const resources = ref({
+  human: '',
+  material: '',
+  financial: ''
+})
+
+const risks = ref([
+  {
+    title: '',
+    solution: ''
+  }
+])
+
+function addRisk() {
+  risks.value.push({
+    title: '',
+    solution: ''
+  })
+}
+
+function removeRisk(index: number) {
+  risks.value.splice(index, 1)
+}
+
 // 获取月份进度
 function getMonthProgress(startMonth: string, endMonth: string): number {
   const quarterMatch = currentQuarter.value.match(/Q(\d)/)
@@ -407,4 +544,4 @@ const quarterMilestones = [
   },
   // ... 更多里程碑
 ]
-</script>                
+</script>                   
